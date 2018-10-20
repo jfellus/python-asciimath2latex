@@ -149,33 +149,61 @@ SYMBOLS=[
     [r"Pr", r'\mathbb{P}'],
     [r"P", r'\mathbb{P}'],
     [r"in", r"\in"],
+    [r"notin", r"\\notin"],
     [r"subset", r"\subset"],
     [r"supset", r"\supset"],
     [r"forall", r"\\forall"],
     [r"exists", r"\exists"],
     [r"implies", r"\\Rightarrow"],
+
 ]
 
 RAW_SYMBOLS = [
-    [r'\|->', r'\\mapsto'],
-    [r'->', r'\\rightarrow'],
-    [r'=>', r'\\Rightarrow'],
-    [r'<=>', r'\\Leftrightarrow'],
-    [r'>=', r'\\geq'],
-    [r'<=', r'\\leq'],
+    [r'[|]-&gt;', r'\\mapsto'],
+    [r'-&gt;', r'\\rightarrow'],
+    [r'=&gt;', r'\\Rightarrow'],
+    [r'&lt;=&gt;', r'\\Leftrightarrow'],
+    [r'&gt;=', r'\\geq'],
+    [r'&lt;=', r'\\leq'],
+]
+
+S_SYMBOLS = [
+    ["\\E", "\mathbb{E}"],
+    ["\\P", "\mathbb{P}"],
+
+    ["**X**", "\mathcal{X}"],
+    ["**Y**", "\mathcal{Y}"],
+    ["**Z**", "\mathcal{Z}"],
+    ["**L**", "\mathcal{L}"],
+    ["**l**", "\mathcal{l}"],
+
+    ["*X*", "\mathbf{X}"],
+    ["*Y*", "\mathbf{Y}"],
+    ["*Z*", "\mathbf{Z}"],
+
+    ["*x*", "\mathbf{x}"],
+    ["*y*", "\mathbf{y}"],
+    ["*z*", "\mathbf{z}"],
 ]
 
 
 
-def substitute_symbols(str):
+def substitute_symbols(str, additionnal_symbols):
     str = re.sub(r"/", r"\\frac", str)
+    for symb in additionnal_symbols:
+        try:
+            str = re.sub(r"(^|[^a-zA-Z])("+re.escape(symb[0].replace("(", "\\(").replace(")", "\\)"))+r")($|[^a-zA-Z])", r"\1"+symb[1].replace("\\", "\\\\")+r"\3", str)
+        except:
+            pass
     for symb in RAW_SYMBOLS:
         str = re.sub(symb[0], symb[1], str)
     for symb in SYMBOLS:
         str = re.sub(r"(^|\W)" + symb[0], r"\1"+symb[1], str)
+    for symb in S_SYMBOLS:
+        str = str.replace(symb[0], symb[1])
     return str
 
-def asciimath2latex(x):
+def asciimath2latex(x, symbols):
     #print(x)
     tree = build_expressions_tree(x)
     #tree.dump()
@@ -187,7 +215,7 @@ def asciimath2latex(x):
     tree = postprocess(tree)
     #tree.dump()
     #print("\n-----result-----\n")
-    return substitute_symbols(tree.flatten())
+    return substitute_symbols(tree.flatten(), symbols)
 
 def main():
     print(asciimath2latex(sys.stdin.read()))
